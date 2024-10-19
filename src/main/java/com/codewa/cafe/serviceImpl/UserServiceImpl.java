@@ -23,17 +23,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestMap) {
         log.info("Inside SignUp method {}", requestMap);
-        if(validateSignUp(requestMap)) {
-            User user = userDao.findByEmail(requestMap.get("email"));
-            if(Objects.isNull(user)) {
-                userDao.save(getUserFromMap(requestMap));
-                return CafeUtils.getResponseEntity(CafeConstant.SUCCESSFULLY_REGISTERD, HttpStatus.OK);
+        try {
+            if(validateSignUp(requestMap)) {
+                User user = userDao.findByEmail(requestMap.get("email"));
+                if(Objects.isNull(user)) {
+                    userDao.save(getUserFromMap(requestMap));
+                    return CafeUtils.getResponseEntity(CafeConstant.SUCCESSFULLY_REGISTERD, HttpStatus.OK);
+                } else {
+                    return CafeUtils.getResponseEntity(CafeConstant.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
+                }
             } else {
-                return CafeUtils.getResponseEntity(CafeConstant.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(CafeConstant.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
             }
-        } else {
-            return CafeUtils.getResponseEntity(CafeConstant.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return CafeUtils.getResponseEntity(CafeConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private boolean validateSignUp(Map<String, String> requestMap) {
